@@ -1,0 +1,7 @@
+# Bases de données SQLite
+*.sqlite
+*.sqlite3
+*.db
+
+# Fichiers SQL
+*.sql

@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RADèS — Supervision Métier</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-base:      #0d0f14;
+      --bg-panel:     #13161e;
+      --bg-card:      #1a1e2a;
+      --bg-card-alt:  #1f2433;
+      --bg-input:     #0f1117;
+      --border:       #252836;
+      --border-soft:  #1e2230;
+      --text-primary: #e8eaf0;
+      --text-secondary:#8a90a4;
+      --text-muted:   #4a5068;
+      --accent-blue:  #2979ff;
+      --accent-blue-h:#1a5cd6;
+      --accent-green: #22c55e;
+      --accent-green-h:#16a34a;
+      --accent-red:   #ef4444;
+      --accent-yellow:#f59e0b;
+      --accent-orange:#f97316;
+    }
+
+    *, body { font-family: 'Segoe UI', Inter, sans-serif; }
+    body {
+      background: var(--bg-base);
+      color: var(--text-primary);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      font-size: 13px;
+    }
+
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    /* ─── PAGES ──────────────────────────── */
+    .page { display: none; height: 100vh; flex-direction: column; overflow: hidden; }
+    .page.active { display: flex; }
+
+    /* ════════════════════════════════════════
+       PAGE : LOGIN
+    ════════════════════════════════════════ */
+    #page-login {
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(ellipse at 50% 40%, #111827 0%, #0d0f14 70%);
+    }
+    .login-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 48px 44px 40px;
+      width: 430px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: 0 24px 60px rgba(0,0,0,.6);
+    }
+    .login-logo {
+      text-align: center;
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      margin-bottom: 2px;
+    }
+    .login-tagline {
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+    .login-card input {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-primary);
+      padding: 12px 16px;
+      font-size: 13px;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .login-card input:focus { border-color: var(--accent-blue); }
+    .login-card input::placeholder { color: var(--text-muted); }
+    .btn-login {
+      width: 100%;
+      padding: 13px;
+      background: var(--accent-blue);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 6px;
+      transition: background .2s;
+    }
+    .btn-login:hover { background: var(--accent-blue-h); }
+    .login-note { text-align:center; font-size:11px; color: var(--text-muted); }
+
+    /* ════════════════════════════════════════
+       PAGE : RADèS — HEADER
+    ════════════════════════════════════════ */
+    .rades-header {
+      height: 46px;
+      min-height: 46px;
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 10px;
+      z-index: 100;
+    }
+    .rades-logo {
+      font-size: 17px;
+      font-weight: 900;
+      letter-spacing: .3px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .api-pill {
+      background: rgba(34,197,94,.1);
+      border: 1px solid rgba(34,197,94,.25);
+      color: var(--accent-green);
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 9px;
+      border-radius: 20px;
+    }
+    .hdr-sep { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+    .hdr-stat { display: flex; align-items: center; gap: 3px; font-size: 11px; color: var(--text-secondary); padding: 0 3px; }
+    .hdr-stat .v { color: var(--text-primary); font-weight: 700; }
+    .hdr-stat .v.warn { color: var(--accent-yellow); }
+    .hdr-spacer { flex: 1; }
+    .hdr-btn {
+      padding: 5px 14px;
+      background: var(--bg-card-alt);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .hdr-btn:hover { background: var(--border); }
+    .hdr-icon-btn {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 17px;
+      cursor: pointer;
+      padding: 4px 7px;
+      border-radius: 6px;
+      line-height: 1;
+    }
+    .hdr-icon-btn:hover { color: var(--text-primary); background: var(--bg-card); }
+    .hdr-icon-btn.active-btn { color: var(--accent-blue); background: rgba(41,121,255,.12); }
+
+    /* ─── SHELL ──────────────────────────── */
+    .rades-shell { display: flex; flex: 1; overflow: hidden; }
+
+    /* ─── SIDEBAR ────────────────────────── */
+    .sidebar {
+      width: 210px;
+      min-width: 210px;
+      background: var(--bg-panel);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .sidebar-section-title {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      padding: 16px 16px 8px;
+    }
+    .sidebar-body { padding: 4px 12px 12px; display: flex; flex-direction: column; gap: 6px; flex: 1; overflow-y: auto; }
+    .btn-new-session {
+      width: 100%; padding: 9px 12px;
+      background: var(--bg-card);
+      border: 1px dashed var(--border);
+      color: var(--text-muted);
+      border-radius: 7px; font-size: 12px;
+      cursor: pointer; text-align: left; transition: all .15s;
+    }
+    .btn-new-session:hover { border-color: var(--accent-blue); color: var(--accent-blue); background: rgba(41,121,255,.06); }
+    .session-rename-btn { opacity:0;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;padding:2px 4px;border-radius:3px;flex-shrink:0; }
+    .session-item:hover .session-rename-btn { opacity:1; }
+    .session-item {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 7px; padding: 8px 12px; cursor: pointer; transition: border-color .15s;
+    }
+    .session-item:hover { border-color: var(--accent-blue); }
+    .session-item.sel { border-color: var(--accent-blue); background: rgba(41,121,255,.07); }
+    .si-name { font-size: 12px; font-weight: 600; color: var(--text-primary); }
+    .si-time { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+    .si-badge {
+      display: inline-block; font-size: 9px; font-weight: 700;
+      padding: 1px 6px; border-radius: 3px; margin-top: 4px;
+      background: rgba(239,68,68,.15); color: var(--accent-red);
+    }
+    .cost-widget {
+      padding: 12px 16px; border-top: 1px solid var(--border);
+      font-size: 11px; color: var(--text-secondary); line-height: 2;
+    }
+    .cost-widget .cb { color: var(--text-primary); font-weight: 700; }
+
+    /* ─── MAIN ───────────────────────────── */
+    .rades-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* ─── TABS ───────────────────────────── */
+    .tabs-bar {
+      display: flex; align-items: center;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-panel);
+      padding: 0 20px; min-height: 44px;
+    }
+    .tab-btn {
+      padding: 12px 16px; background: none; border: none;
+      color: var(--text-muted); font-size: 13px; cursor: pointer;
+      border-bottom: 2px solid transparent; margin-bottom: -1px;
+      transition: color .15s; white-space: nowrap;
+    }
+    .tab-btn:hover { color: var(--text-secondary); }
+    .tab-btn.active { color: var(--text-primary); border-bottom-color: var(--accent-blue); font-weight: 600; }
+    .tab-panel { display: none; flex: 1; overflow: hidden; }
+    .tab-panel.active { display: flex; flex-direction: column; }
+
+    /* ════════════════════════════════════════
+       TAB : AGENT CHAT
+    ════════════════════════════════════════ */
+    .chat-messages { flex: 1; padding: 24px 28px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
+    .msg-ia {
+      background: #182b16; border: 1px solid #2a4a26; border-radius: 12px;
+      padding: 16px 20px; max-width: 700px; font-size: 13px; line-height: 1.65;
+    }
+    .msg-ia .mn { font-weight: 700; color: var(--accent-green); margin-bottom: 8px; }
+    .msg-ia ul { padding-left: 18px; margin-top: 4px; }
+    .msg-ia li { margin: 3px 0; }
+    .msg-ia .ms { margin-top: 10px; font-size: 11px; color: var(--text-muted); }
+    .msg-user {
+      background: var(--bg-card-alt); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px 18px; max-width: 560px;
+      align-self: flex-end; font-size: 13px;
+    }
+    /* ── Conversation sidebar ── */
+    .conv-sidebar { width:220px;min-width:220px;border-right:1px solid var(--border);background:var(--bg-panel);display:flex;flex-direction:column;overflow:hidden; }
+    .conv-sidebar-header { display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border-soft); }
+    .conv-new-btn { background:var(--accent-blue);border:none;color:#fff;border-radius:6px;width:24px;height:24px;font-size:16px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center; }
+    .conv-list { flex:1;overflow-y:auto;padding:6px 0; }
+    .conv-item { display:flex;align-items:center;gap:6px;padding:8px 12px;cursor:pointer;border-radius:6px;margin:0 6px;color:var(--text-secondary);font-size:11px; }
+    .conv-item:hover { background:var(--bg-card); }
+    .conv-item.active { background:var(--bg-card);color:var(--text-primary);font-weight:600; }
+    .conv-item-label { flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+    .conv-item-label[contenteditable="true"] { outline:1px solid var(--accent-blue);border-radius:3px;padding:1px 3px;background:var(--bg-input); }
+    .conv-rename-btn { opacity:0;font-size:10px;background:none;border:none;color:var(--text-muted);cursor:pointer;padding:2px 4px;border-radius:3px; }
+    .conv-item:hover .conv-rename-btn { opacity:1; }
+
+    /* ── Account rows ── */
+    .account-row { display:flex;align-items:center;gap:10px;background:var(--bg-card);border:1px solid var(--border-soft);border-radius:8px;padding:8px 12px; }
+    .account-avatar { width:30px;height:30px;border-radius:50%;background:var(--accent-blue);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0; }
+    .account-info { flex:1;min-width:0; }
+    .account-name { font-size:12px;font-weight:600;color:var(--text-primary); }
+    .account-meta { font-size:10px;color:var(--text-muted); }
+    .account-del { background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:12px;padding:4px; }
+    .account-del:hover { color:#ef4444; }
+
+    .chat-input-bar {
+      border-top: 1px solid var(--border); padding: 12px 24px;
+      display: flex; gap: 10px; background: var(--bg-panel); align-items: center;
+    }
+    .btn-session {
+      background: var(--bg-card); border: 1px solid var(--border);
+      color: var(--text-secondary); border-radius: 6px;
+      padding: 8px 13px; font-size: 11px; cursor: pointer; white-space: nowrap;
+    }
+    .chat-input-bar input {
+      flex: 1; background: var(--bg-input); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text-primary);
+      padding: 10px 16px; font-size: 13px; outline: none;
+    }
+    .chat-input-bar input:focus { border-color: var(--accent-blue); }
+    .chat-input-bar input::placeholder { color: var(--text-muted); }
+    .btn-send {
+      background: var(--accent-blue); color: #fff; border: none;
+      border-radius: 8px; padding: 10px 22px;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+    .btn-send:hover { background: var(--accent-blue-h); }
+
+    /* ════════════════════════════════════════
+       TAB : SUPERVISION
+    ════════════════════════════════════════ */
+    .supervision-content { flex: 1; padding: 28px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
+    .sup-toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .sup-select {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 7px; color: var(--text-primary);
+      padding: 8px 12px; font-size: 12px; outline: none; cursor: pointer;
+    }
+    .sup-input {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 7px; color: var(--text-primary);
+      padding: 8px 12px; font-size: 12px; outline: none; width: 210px;
+    }
+    .sup-input::placeholder { color: var(--text-muted); }
+    .btn-launch {
+      background: var(--accent-green); color: #fff; border: none;
+      border-radius: 7px; padding: 9px 20px;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+    .btn-launch:hover { background: var(--accent-green-h); }
+    .report-box {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; min-height: 340px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-muted); font-style: italic; font-size: 13px;
+    }
+
+    /* ════════════════════════════════════════
+       TAB : VISUALISATION (graphe zoomable)
+    ════════════════════════════════════════ */
+    .visu-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .visu-shell { flex: 1; display: flex; overflow: hidden; }
+
+    .visu-tree-panel {
+      width: 230px; min-width: 230px;
+      background: #fff; border-right: 1px solid #dde0e8;
+      display: flex; flex-direction: column; overflow-y: auto;
+    }
+    .visu-tree-header {
+      padding: 11px 14px; border-bottom: 1px solid #eee;
+      font-size: 13px; font-weight: 700; color: #111;
+    }
+    .visu-search-row {
+      display: flex; gap: 6px; padding: 9px 12px; border-bottom: 1px solid #eee;
+    }
+    .visu-search-row input {
+      flex: 1; background: #f4f5f8; border: 1px solid #dde0e8;
+      border-radius: 6px; padding: 6px 10px;
+      font-size: 11px; font-family: monospace; color: #111; outline: none;
+    }
+    .visu-go {
+      background: #1a1a2e; color: #fff; border: none;
+      border-radius: 6px; padding: 6px 11px; cursor: pointer;
+    }
+    .tree-tabs { display: flex; padding: 0 12px; border-bottom: 1px solid #eee; }
+    .tree-tab {
+      padding: 7px 8px; background: none; border: none;
+      font-size: 10px; font-weight: 700; letter-spacing: .5px;
+      cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; color: #888;
+    }
+    .tree-tab.active { color: #ef4444; border-bottom-color: #ef4444; }
+    .tree-body { flex: 1; overflow-y: auto; }
+    .tree-row {
+      display: flex; align-items: center; padding: 6px 12px;
+      font-size: 11px; cursor: pointer; gap: 5px;
+      font-family: monospace; color: #333;
+    }
+    .tree-row:hover { background: #f4f5f8; }
+    .tree-row.sel { background: #eef2ff; }
+    .tr-count { margin-left: auto; font-size: 10px; color: #666; }
+    .badge-anom { background: #ef4444; color: #fff; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 3px; }
+
+    .visu-right { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: #f8f9fb; }
+
+    .visu-toolbar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 16px; background: #fff; border-bottom: 1px solid #dde0e8; z-index: 10;
+    }
+    .visu-toolbar-label { font-size: 12px; color: #555; }
+    .zoom-btn {
+      background: #f4f5f8; border: 1px solid #dde0e8; border-radius: 5px;
+      padding: 5px 11px; font-size: 15px; cursor: pointer; color: #333; line-height: 1;
+    }
+    .zoom-btn:hover { background: #e8eaf0; }
+    .zoom-level { font-size: 11px; color: #666; min-width: 38px; text-align: center; }
+    .visu-legend { display: flex; gap: 14px; margin-left: auto; font-size: 11px; color: #444; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 4px; vertical-align: middle; }
+    .legend-dot.green { background: #22c55e; }
+    .legend-dot.red   { background: #ef4444; }
+    .legend-dot.gray  { background: #607080; }
+    .legend-dot.light { background: #c8cdd8; }
+
+    .visu-canvas-outer { flex: 1; overflow: auto; cursor: grab; }
+    .visu-canvas-outer:active { cursor: grabbing; }
+    .visu-canvas-inner { transform-origin: top left; transition: transform .15s; padding: 40px 60px 80px; min-width: 1100px; }
+
+    .visu-footer {
+      height: 54px; background: #fff; border-top: 1px solid #dde0e8;
+      display: flex; align-items: center; padding: 0 40px; gap: 56px;
+    }
+    .visu-stat .vsl { font-size: 22px; font-weight: 700; color: #1a1a2e; }
+    .visu-stat .vsb { font-size: 10px; font-weight: 700; letter-spacing: 1px; color: #888; margin-top: 1px; }
+
+    /* ════════════════════════════════════════
+       TAB : AIOPS CONSOLE
+    ════════════════════════════════════════ */
+    /* AIOps shell */
+    .aiops-shell-wrap { display: flex; height: 100%; overflow: hidden; }
+    .aiops-modules-area { flex: 1; padding: 24px 26px; overflow-y: auto; background: #0b0e19; }
+    .aiops-gen-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
+    .aiops-gen-label { font-size: 12px; color: var(--text-secondary); }
+    .aiops-tabs-row { display: flex; background: var(--bg-card-alt); border: 1px solid var(--border); border-radius: 7px; overflow: hidden; }
+    .aiops-tab { padding: 7px 16px; background: none; border: none; color: var(--text-secondary); font-size: 12px; cursor: pointer; }
+    .aiops-tab.active { background: var(--bg-card); color: var(--text-primary); font-weight: 600; }
+    .aiops-section-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+    /* Module cards grid */
+    .aiops-modules-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px,1fr)); gap: 14px; }
+    .amod-card {
+      background: #131728; border: 1px solid #1e2440; border-radius: 10px;
+      padding: 16px; cursor: pointer; transition: border-color .2s, background .2s;
+    }
+    .amod-card:hover { border-color: var(--accent-blue); background: #161c34; }
+    .amod-card.active { border-color: var(--accent-blue); background: #0f1830; }
+    .amod-title { font-size: 11px; color: var(--text-secondary); margin-bottom: 8px; font-weight: 500; text-transform: uppercase; letter-spacing: .5px; }
+    .amod-value { font-size: 26px; font-weight: 800; margin-bottom: 10px; line-height: 1; }
+    .amod-value.err { color: var(--accent-red); }
+    .amod-value.warn { color: var(--accent-yellow); }
+    .amod-value.ok { color: var(--accent-green); }
+    .amod-chart { width: 100%; display: block; }
+    .amod-trend { font-size: 10px; margin-top: 6px; color: var(--text-muted); }
+    /* KPI side panel */
+    .aiops-kpi-panel { width: 0; min-width: 0; overflow: hidden; transition: width .25s ease, min-width .25s ease; background: var(--bg-panel); border-left: 1px solid var(--border); }
+    .aiops-kpi-panel.open { width: 290px; min-width: 290px; }
+    .kpi-panel-inner { width: 290px; padding: 20px; }
+    .kpi-panel-title { font-size: 13px; font-weight: 700; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .kpi-close-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 16px; line-height: 1; padding: 0 2px; }
+    .kpi-close-btn:hover { color: var(--text-primary); }
+    .kpi-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border-soft); }
+    .kpi-label { font-size: 11px; color: var(--text-secondary); }
+    .kpi-val { font-size: 12px; font-weight: 600; }
+    .kpi-val.err { color: var(--accent-red); }
+    .kpi-val.warn { color: var(--accent-yellow); }
+    .kpi-val.ok { color: var(--accent-green); }
+
+    /* ════════════════════════════════════════
+       TAB : PAQUET TRACER
+    ════════════════════════════════════════ */
+    .tracer-inner { flex: 1; display: flex; overflow: hidden; }
+    .tracer-sidebar {
+      width: 210px; min-width: 210px;
+      background: var(--bg-panel); border-right: 1px solid var(--border);
+      padding: 16px; display: flex; flex-direction: column; gap: 12px;
+    }
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-label { font-size: 11px; color: var(--text-secondary); }
+    .form-control {
+      background: var(--bg-input); border: 1px solid var(--border); border-radius: 6px;
+      color: var(--text-primary); padding: 7px 10px; font-size: 12px; width: 100%; outline: none;
+    }
+    .form-control::placeholder { color: var(--text-muted); }
+    .btn-secondary {
+      width: 100%; padding: 9px; background: var(--bg-card-alt);
+      border: 1px solid var(--border); color: var(--text-primary);
+      border-radius: 7px; font-size: 12px; cursor: pointer;
+    }
+    .btn-secondary:hover { background: var(--border); }
+    .tracer-content { flex: 1; overflow-y: auto; padding: 28px; display: flex; flex-direction: column; gap: 20px; }
+    .tracer-title { font-size: 20px; font-weight: 700; }
+    .breadcrumb { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+    .breadcrumb .crumb { color: var(--accent-green); }
+    .tracer-metrics { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+    .metric-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; }
+    .metric-card .mlbl { font-size: 11px; color: var(--text-secondary); margin-bottom: 6px; }
+    .metric-card .mval { font-size: 22px; font-weight: 700; }
+    .mval.ko { color: var(--accent-red); }
+    .tracer-sub-tabs { display: flex; border-bottom: 1px solid var(--border); }
+    .tracer-stab {
+      padding: 10px 17px; background: none; border: none;
+      color: var(--text-muted); font-size: 13px; cursor: pointer;
+      border-bottom: 2px solid transparent; margin-bottom: -1px;
+    }
+    .tracer-stab.active { color: var(--accent-red); border-bottom-color: var(--accent-red); font-weight: 600; }
+    .tracer-stab-panel { display: none; }
+    .tracer-stab-panel.active { display: block; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .data-table th { text-align: left; padding: 10px 14px; color: var(--text-muted); font-size: 11px; border-bottom: 1px solid var(--border); font-weight: 600; letter-spacing:.5px; }
+    .data-table td { padding: 9px 14px; border-bottom: 1px solid rgba(255,255,255,.03); color: var(--text-secondary); }
+    .data-table tr:hover td { background: var(--bg-card); }
+    .row-num { color: var(--text-muted); font-size: 11px; }
+    .accordion { display: flex; flex-direction: column; gap: 6px; }
+    .accordion-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .accordion-hdr { display: flex; align-items: center; gap: 8px; padding: 12px 16px; cursor: pointer; font-size: 12px; color: var(--text-secondary); }
+    .accordion-hdr:hover { background: var(--bg-card-alt); }
+    .chevron { font-size: 10px; transition: transform .2s; }
+    .accordion-item.open .chevron { transform: rotate(90deg); }
+    .accordion-body { display: none; border-top: 1px solid var(--border); }
+    .accordion-item.open .accordion-body { display: block; }
+    .accordion-row { padding: 10px 16px 10px 32px; font-size: 12px; color: var(--text-secondary); border-bottom: 1px solid rgba(255,255,255,.03); display: flex; align-items: center; gap: 8px; }
+    .accordion-row:last-child { border-bottom: none; }
+    .bko { color: var(--accent-red); font-size: 11px; font-weight: 700; }
+
+    /* ════════════════════════════════════════
+       SETTINGS PANEL (slide-in depuis la droite)
+    ════════════════════════════════════════ */
+    .settings-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.5);
+      z-index: 1000; display: none; justify-content: flex-end;
+    }
+    .settings-overlay.open { display: flex; }
+    .settings-panel {
+      background: var(--bg-panel); border-left: 1px solid var(--border);
+      width: 500px; height: 100%; overflow-y: auto;
+      box-shadow: -16px 0 48px rgba(0,0,0,.5);
+      display: flex; flex-direction: column;
+    }
+    .settings-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 22px; border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; background: var(--bg-panel); z-index: 2;
+    }
+    .settings-header h3 { font-size: 16px; font-weight: 700; }
+    .btn-close {
+      background: none; border: none; color: var(--text-muted);
+      font-size: 22px; cursor: pointer; line-height: 1; padding: 0 4px;
+    }
+    .btn-close:hover { color: var(--text-primary); }
+
+    .settings-section { padding: 20px 22px; border-bottom: 1px solid var(--border-soft); }
+    .settings-section:last-of-type { border-bottom: none; }
+    .settings-section-title {
+      font-size: 10px; font-weight: 700; letter-spacing: 1.2px;
+      text-transform: uppercase; color: var(--text-muted); margin-bottom: 16px;
+    }
+    .settings-row { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+    .settings-row:last-child { margin-bottom: 0; }
+    .settings-label { font-size: 12px; color: var(--text-secondary); }
+    .settings-input {
+      background: var(--bg-input); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text-primary);
+      padding: 9px 13px; font-size: 12px; outline: none; width: 100%;
+    }
+    .settings-input:focus { border-color: var(--accent-blue); }
+    .settings-input::placeholder { color: var(--text-muted); }
+    .settings-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .conn-status-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+    .btn-test {
+      background: none; border: 1px solid var(--accent-green);
+      color: var(--accent-green); border-radius: 7px;
+      padding: 7px 16px; font-size: 12px; cursor: pointer;
+    }
+    .conn-ok { font-size: 11px; color: var(--accent-green); }
+
+    /* Service cards in settings */
+    .service-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px 16px;
+      display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+    }
+    .service-card:last-child { margin-bottom: 0; }
+    .service-icon-sq {
+      width: 36px; height: 36px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px; flex-shrink: 0;
+    }
+    .service-info { flex: 1; }
+    .service-name { font-size: 13px; font-weight: 600; }
+    .service-desc { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+    .service-right { display: flex; align-items: center; gap: 8px; }
+    .badge-inactif { background: var(--bg-card-alt); color: var(--text-muted); border: 1px solid var(--border); border-radius: 4px; font-size: 10px; font-weight: 700; padding: 2px 7px; }
+    .badge-actif { background: rgba(34,197,94,.12); color: var(--accent-green); border: 1px solid rgba(34,197,94,.3); border-radius: 4px; font-size: 10px; font-weight: 700; padding: 2px 7px; }
+    .btn-configure { background: var(--bg-card-alt); border: 1px solid var(--border); color: var(--text-primary); border-radius: 6px; padding: 6px 12px; font-size: 11px; cursor: pointer; white-space: nowrap; }
+    .btn-configure:hover { background: var(--border); }
+
+    /* Severity routing */
+    .severity-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; background: var(--bg-card);
+      border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px;
+    }
+    .sev-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .sev-label { font-size: 12px; font-weight: 600; width: 68px; }
+    .sev-arrow { color: var(--text-muted); font-size: 14px; }
+    .sev-select { flex: 1; background: var(--bg-input); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary); padding: 6px 10px; font-size: 12px; outline: none; }
+
+    .settings-footer {
+      padding: 14px 22px; display: flex; justify-content: flex-end; gap: 10px;
+      border-top: 1px solid var(--border); background: var(--bg-panel);
+      position: sticky; bottom: 0;
+    }
+    .btn-cancel { background: none; border: 1px solid var(--border); color: var(--text-secondary); border-radius: 7px; padding: 9px 20px; font-size: 13px; cursor: pointer; }
+    .btn-save { background: var(--accent-blue); color: #fff; border: none; border-radius: 7px; padding: 9px 22px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .btn-save:hover { background: var(--accent-blue-h); }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════
+     PAGE : CONNEXION
+════════════════════════════════════════ -->
+<div class="page active" id="page-login">
+  <div class="login-card">
+    <div class="login-logo">RAD<span style="color:#ef4444;">è</span>S</div>
+    <div class="login-tagline">Supervision Métier Autonome</div>
+    <input type="text" placeholder="Adresse e-mail" />
+    <input type="password" placeholder="Mot de passe" />
+    <button class="btn-login" onclick="goToRades()">Se connecter</button>
+    <div class="login-note">Connexion chiffrée — vos identifiants ne sont pas stockés</div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════
+     PAGE : RADèS
+════════════════════════════════════════ -->
+<div class="page" id="page-rades">
+
+  <!-- HEADER -->
+  <header class="rades-header">
+    <div class="rades-logo">RAD<span style="color:#ef4444;">è</span>S <span style="color:#22c55e;font-size:9px;">●</span></div>
+    <span class="api-pill">API connectée — 2.0.0</span>
+    <div class="hdr-spacer"></div>
+    <div class="hdr-stat">↑ <span class="v">0</span></div>
+    <div class="hdr-stat">↓ <span class="v">0</span></div>
+    <div class="hdr-stat">Σ <span class="v warn">0</span></div>
+    <div class="hdr-stat"><span class="v">0</span>&nbsp;appels</div>
+    <div class="hdr-sep"></div>
+    <button class="hdr-icon-btn" id="btn-settings" title="Paramètres" onclick="toggleSettings()">⚙</button>
+  </header>
+
+  <div class="rades-shell">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-section-title">Sessions Actives</div>
+      <div class="sidebar-body">
+        <button class="btn-new-session" onclick="addSession()">+ Nouvelle session</button>
+        <div id="session-list">
+          <div class="session-item sel" data-id="1">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:4px;">
+              <div class="si-name" id="sname-1">Analyse 24h</div>
+              <button class="session-rename-btn" onclick="event.stopPropagation();startSessionRename(1)" title="Renommer">✎</button>
+            </div>
+            <div class="si-time">Il y a 2 min</div>
+            <span class="si-badge">3 anomalies</span>
+          </div>
+          <div class="session-item" data-id="2">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:4px;">
+              <div class="si-name" id="sname-2">Supervision flux</div>
+              <button class="session-rename-btn" onclick="event.stopPropagation();startSessionRename(2)" title="Renommer">✎</button>
+            </div>
+            <div class="si-time">Il y a 1h</div>
+          </div>
+          <div class="session-item" data-id="3">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:4px;">
+              <div class="si-name" id="sname-3">Latences élevées</div>
+              <button class="session-rename-btn" onclick="event.stopPropagation();startSessionRename(3)" title="Renommer">✎</button>
+            </div>
+            <div class="si-time">Hier 14:32</div>
+          </div>
+        </div>
+      </div>
+      <div class="cost-widget">
+        <div>Coût Total: <span class="cb">$0.3548</span></div>
+        <div>Coût Session: $0.0000</div>
+        <div>Tokens In / Out: <span class="cb">0 / 0</span></div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="rades-main">
+
+      <!-- TABS -->
+      <div class="tabs-bar">
+        <button class="tab-btn" id="tab-agentchat" onclick="switchTab('agentchat')">Agent Chat</button>
+        <button class="tab-btn active" id="tab-supervision" onclick="switchTab('supervision')">Supervision</button>
+        <button class="tab-btn" id="tab-aiops" onclick="switchTab('aiops')">AIOps Console</button>
+        <button class="tab-btn" id="tab-tracer" onclick="switchTab('tracer')">Paquet Tracer</button>
+      </div>
+
+      <!-- ── AGENT CHAT ──────────────────────── -->
+      <div class="tab-panel" id="panel-agentchat">
+        <div class="chat-messages">
+          <div class="msg-ia">
+            <div class="mn">RADèS</div>
+            Bonjour ! Je suis votre agent de supervision bancaire autonome.
+            <ul>
+              <li>Explorer et analyser vos index Elasticsearch dynamiquement</li>
+              <li>Détecter les anomalies (erreurs, montants négatifs, latences élevées…)</li>
+              <li>Générer des dashboards Kibana à la volée</li>
+            </ul>
+            <br/><strong>Que puis-je faire pour vous ?</strong>
+            <div class="ms">RADèS — prêt</div>
+          </div>
+        </div>
+        <div class="chat-input-bar">
+          <input type="text" placeholder="Ex: Quelles sont les anomalies sur les transactions des dernières 24h ?" />
+          <button class="btn-send">Envoyer</button>
+        </div>
+      </div>
+
+      <!-- ── SUPERVISION ─────────────────────── -->
+      <div class="tab-panel active" id="panel-supervision">
+        <div class="supervision-content">
+          <div>
+            <div style="font-size:18px;font-weight:700;">Rapport de supervision autonome</div>
+            <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">L'agent explore chaque index, détecte les anomalies et produit un rapport structuré.</div>
+          </div>
+          <div class="sup-toolbar">
+            <select class="sup-select">
+              <option>24 heures</option>
+              <option>12 heures</option>
+              <option>7 jours</option>
+              <option>30 jours</option>
+            </select>
+            <input class="sup-input" type="text" placeholder="Filtre d'index (ex: bank-*)" />
+            <button class="btn-launch">▶ Lancer la supervision</button>
+          </div>
+          <div class="report-box">
+            Le rapport s'affichera ici après le lancement de la supervision.
+          </div>
+        </div>
+      </div>
+
+      <!-- ── VISUALISATION ───────────────────── -->
+      <div class="tab-panel" id="panel-visu" style="display:none!important;">
+        <div class="visu-wrapper">
+          <div class="visu-shell">
+            <div class="visu-tree-panel">
+              <div class="visu-tree-header">🔍 Paquet Tracer</div>
+              <div class="visu-search-row">
+                <input type="text" value="fff3c034-baa5-488d-a333-f5ffa5713" />
+                <button class="visu-go">Go</button>
+              </div>
+              <div class="tree-tabs">
+                <button class="tree-tab active">FICHIER</button>
+                <button class="tree-tab">HIÉRARCHIE</button>
+              </div>
+              <div class="tree-body">
+                <div class="tree-row sel" style="font-weight:700;">957e07cf… <span class="tr-count">4/8</span><span class="badge-anom">ANOMALIE</span></div>
+                <div class="tree-row" style="padding-left:26px;">▾ 363c062b… <span class="tr-count">6/8</span><span class="badge-anom">ANOMALIE</span></div>
+                <div class="tree-row" style="padding-left:40px;font-family:monospace;color:#555;">$ 9f535639… <span class="tr-count">0/8</span><span class="badge-anom">ANOMALIE</span></div>
+                <div class="tree-row" style="padding-left:26px;">▾ 44e2acba… <span class="tr-count">6/8</span><span class="badge-anom">ANOMALIE</span></div>
+                <div class="tree-row" style="padding-left:40px;font-family:monospace;color:#555;background:#eef2ff;">$ fff3c034… <span class="tr-count">0/8</span><span class="badge-anom">ANOMALIE</span></div>
+                <div class="tree-row" style="padding-left:26px;">▾ f517d51c… <span class="tr-count">6/8</span><span class="badge-anom">ANOMALIE</span></div>
+                <div class="tree-row" style="padding-left:40px;font-family:monospace;color:#555;">$ 06c0ba4d… <span class="tr-count">0/8</span><span class="badge-anom">ANOMALIE</span></div>
+                <div class="tree-row" style="padding-left:40px;font-family:monospace;color:#555;">$ 14f294ba… <span class="tr-count">0/8</span><span class="badge-anom">ANOMALIE</span></div>
+              </div>
+            </div>
+            <!-- Canvas -->
+            <div class="visu-right">
+              <div class="visu-toolbar">
+                <span class="visu-toolbar-label">Fichier — <strong style="font-family:monospace;">957e07cf…</strong></span>
+                <div style="display:flex;align-items:center;gap:4px;margin-left:14px;">
+                  <button class="zoom-btn" onclick="zoom(-0.15)">−</button>
+                  <span class="zoom-level" id="zoom-label">100%</span>
+                  <button class="zoom-btn" onclick="zoom(+0.15)">+</button>
+                  <button class="zoom-btn" onclick="resetZoom()" style="font-size:12px;padding:5px 9px;" title="Réinitialiser">↺</button>
+                </div>
+                <div class="visu-legend">
+                  <span><span class="legend-dot green"></span>Traversé</span>
+                  <span><span class="legend-dot red"></span>Bloqué</span>
+                  <span><span class="legend-dot gray"></span>Non atteint</span>
+                  <span><span class="legend-dot light"></span>Non pertinent</span>
+                </div>
+              </div>
+              <div class="visu-canvas-outer">
+                <div class="visu-canvas-inner" id="visuInner">
+                  <svg viewBox="0 0 2060 260" xmlns="http://www.w3.org/2000/svg" style="width:2060px;height:260px;">
+                    <defs>
+                      <marker id="arr-g" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L0,7 L7,3.5 z" fill="#22c55e"/></marker>
+                      <marker id="arr-y" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L0,7 L7,3.5 z" fill="#f59e0b"/></marker>
+                      <marker id="arr-d" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L0,7 L7,3.5 z" fill="#6b7280"/></marker>
+                      <marker id="arr-fork" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L0,7 L7,3.5 z" fill="#aaa"/></marker>
+                    </defs>
+                    <!-- ═══ SERIAL CHAIN (nodes 2–10, y=130) ═══ -->
+                    <rect x="10"   y="114" width="128" height="32" rx="7" fill="#22c55e" stroke="#16a34a" stroke-width="1.5"/>
+                    <text x="74"   y="134" text-anchor="middle" font-size="10" font-weight="600" fill="#fff">2 simule-délai</text>
+                    <line x1="138" y1="130" x2="156" y2="130" stroke="#22c55e" stroke-width="1.5" marker-end="url(#arr-g)"/>
+
+                    <rect x="158"  y="114" width="128" height="32" rx="7" fill="#22c55e" stroke="#16a34a" stroke-width="1.5"/>
+                    <text x="222"  y="134" text-anchor="middle" font-size="10" font-weight="600" fill="#fff">3 validateur</text>
+                    <line x1="286" y1="130" x2="304" y2="130" stroke="#22c55e" stroke-width="1.5" marker-end="url(#arr-g)"/>
+
+                    <rect x="306"  y="114" width="128" height="32" rx="7" fill="#22c55e" stroke="#16a34a" stroke-width="1.5"/>
+                    <text x="370"  y="134" text-anchor="middle" font-size="10" font-weight="600" fill="#fff">4 transformateur</text>
+                    <line x1="434" y1="130" x2="452" y2="130" stroke="#22c55e" stroke-width="1.5" marker-end="url(#arr-g)"/>
+
+                    <rect x="454"  y="114" width="128" height="32" rx="7" fill="#22c55e" stroke="#16a34a" stroke-width="1.5"/>
+                    <text x="518"  y="134" text-anchor="middle" font-size="10" font-weight="600" fill="#fff">5 simule-délai</text>
+                    <line x1="582" y1="130" x2="600" y2="130" stroke="#22c55e" stroke-width="1.5" marker-end="url(#arr-g)"/>
+
+                    <rect x="602"  y="114" width="128" height="32" rx="7" fill="#22c55e" stroke="#16a34a" stroke-width="1.5"/>
+                    <text x="666"  y="134" text-anchor="middle" font-size="10" font-weight="600" fill="#fff">6 validateur</text>
+                    <line x1="730" y1="130" x2="748" y2="130" stroke="#22c55e" stroke-width="1.5" marker-end="url(#arr-g)"/>
+
+                    <rect x="750"  y="114" width="128" height="32" rx="7" fill="#22c55e" stroke="#16a34a" stroke-width="1.5"/>
+                    <text x="814"  y="134" text-anchor="middle" font-size="10" font-weight="600" fill="#fff">7 diviseur</text>
+                    <line x1="878" y1="130" x2="896" y2="130" stroke="#22c55e" stroke-width="1.5" marker-end="url(#arr-g)"/>
+
+                    <rect x="898"  y="114" width="128" height="32" rx="7" fill="#22c55e" stroke="#16a34a" stroke-width="1.5"/>
+                    <text x="962"  y="134" text-anchor="middle" font-size="10" font-weight="600" fill="#fff">8 simule-délai</text>
+                    <line x1="1026" y1="130" x2="1044" y2="130" stroke="#22c55e" stroke-width="1.5" marker-end="url(#arr-g)"/>
+
+                    <rect x="1046" y="114" width="128" height="32" rx="7" fill="#22c55e" stroke="#16a34a" stroke-width="1.5"/>
+                    <text x="1110" y="134" text-anchor="middle" font-size="10" font-weight="600" fill="#fff">9 validateur</text>
+                    <line x1="1174" y1="130" x2="1192" y2="130" stroke="#22c55e" stroke-width="1.5" marker-end="url(#arr-g)"/>
+
+                    <rect x="1194" y="114" width="128" height="32" rx="7" fill="#22c55e" stroke="#16a34a" stroke-width="1.5"/>
+                    <text x="1258" y="134" text-anchor="middle" font-size="10" font-weight="600" fill="#fff">10 routeur</text>
+
+                    <!-- ═══ FORK from routeur ═══ -->
+                    <line x1="1322" y1="130" x2="1348" y2="130" stroke="#22c55e" stroke-width="1.5"/>
+                    <!-- vertical trunk -->
+                    <line x1="1348" y1="60" x2="1348" y2="200" stroke="#aaa" stroke-width="1.5"/>
+                    <!-- branch arrows -->
+                    <line x1="1348" y1="60"  x2="1408" y2="60"  stroke="#22c55e" stroke-width="1.5" marker-end="url(#arr-g)"/>
+                    <line x1="1348" y1="130" x2="1408" y2="130" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#arr-y)"/>
+                    <line x1="1348" y1="200" x2="1408" y2="200" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr-d)"/>
+
+                    <!-- Lane labels -->
+                    <text x="1412" y="22" font-size="9" fill="#22c55e" font-style="italic" font-weight="500">Fichier seulement</text>
+                    <text x="1412" y="100" font-size="9" fill="#f59e0b" font-style="italic" font-weight="500">Remise parfois (avec fichier)</text>
+                    <text x="1412" y="170" font-size="9" fill="#9ca3af" font-style="italic" font-weight="500">Transaction (parfois remise)</text>
+
+                    <!-- ═══ LANE 1 — fichier seulement (green, y=60) ═══ -->
+                    <rect x="1410" y="44" width="128" height="32" rx="7" fill="#22c55e" stroke="#16a34a" stroke-width="1.5"/>
+                    <text x="1474" y="64" text-anchor="middle" font-size="10" font-weight="600" fill="#fff">11 bdd</text>
+                    <line x1="1538" y1="60" x2="1556" y2="60" stroke="#22c55e" stroke-width="1.5" marker-end="url(#arr-g)"/>
+
+                    <rect x="1558" y="44" width="128" height="32" rx="7" fill="#22c55e" stroke="#16a34a" stroke-width="1.5"/>
+                    <text x="1622" y="64" text-anchor="middle" font-size="10" font-weight="600" fill="#fff">19 orchestrateur</text>
+                    <line x1="1686" y1="60" x2="1704" y2="60" stroke="#22c55e" stroke-width="1.5" marker-end="url(#arr-g)"/>
+
+                    <rect x="1706" y="44" width="128" height="32" rx="7" fill="#22c55e" stroke="#16a34a" stroke-width="1.5"/>
+                    <text x="1770" y="64" text-anchor="middle" font-size="10" font-weight="600" fill="#fff">22 validateur</text>
+                    <line x1="1834" y1="60" x2="1852" y2="60" stroke="#22c55e" stroke-width="1.5" marker-end="url(#arr-g)"/>
+
+                    <rect x="1854" y="44" width="148" height="32" rx="7" fill="#22c55e" stroke="#16a34a" stroke-width="1.5"/>
+                    <text x="1928" y="57" text-anchor="middle" font-size="9.5" font-weight="600" fill="#fff">25 consommateur</text>
+                    <text x="1928" y="70" text-anchor="middle" font-size="9.5" font-weight="600" fill="#fff">données</text>
+
+                    <!-- ═══ LANE 2 — remise parfois (yellow, y=130) ═══ -->
+                    <rect x="1410" y="114" width="128" height="32" rx="7" fill="#f59e0b" stroke="#d97706" stroke-width="1.5"/>
+                    <text x="1474" y="134" text-anchor="middle" font-size="10" font-weight="600" fill="#fff">12 bdd</text>
+                    <line x1="1538" y1="130" x2="1556" y2="130" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#arr-y)"/>
+
+                    <rect x="1558" y="114" width="128" height="32" rx="7" fill="#f59e0b" stroke="#d97706" stroke-width="1.5"/>
+                    <text x="1622" y="134" text-anchor="middle" font-size="10" font-weight="600" fill="#fff">20 orchestrateur</text>
+                    <line x1="1686" y1="130" x2="1704" y2="130" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#arr-y)"/>
+
+                    <rect x="1706" y="114" width="128" height="32" rx="7" fill="#f59e0b" stroke="#d97706" stroke-width="1.5"/>
+                    <text x="1770" y="134" text-anchor="middle" font-size="10" font-weight="600" fill="#fff">23 validateur</text>
+                    <line x1="1834" y1="130" x2="1852" y2="130" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#arr-y)"/>
+
+                    <rect x="1854" y="114" width="148" height="32" rx="7" fill="#f59e0b" stroke="#d97706" stroke-width="1.5"/>
+                    <text x="1928" y="127" text-anchor="middle" font-size="9.5" font-weight="600" fill="#fff">26 consommateur</text>
+                    <text x="1928" y="140" text-anchor="middle" font-size="9.5" font-weight="600" fill="#fff">données</text>
+
+                    <!-- ═══ LANE 3 — transaction (gray, y=200) ═══ -->
+                    <rect x="1410" y="184" width="128" height="32" rx="7" fill="#374151" stroke="#4b5563" stroke-width="1.5"/>
+                    <text x="1474" y="204" text-anchor="middle" font-size="10" font-weight="600" fill="#d1d5db">13 bdd</text>
+                    <line x1="1538" y1="200" x2="1556" y2="200" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr-d)"/>
+
+                    <rect x="1558" y="184" width="128" height="32" rx="7" fill="#374151" stroke="#4b5563" stroke-width="1.5"/>
+                    <text x="1622" y="204" text-anchor="middle" font-size="10" font-weight="600" fill="#d1d5db">21 orchestrateur</text>
+                    <line x1="1686" y1="200" x2="1704" y2="200" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr-d)"/>
+
+                    <rect x="1706" y="184" width="128" height="32" rx="7" fill="#374151" stroke="#4b5563" stroke-width="1.5"/>
+                    <text x="1770" y="204" text-anchor="middle" font-size="10" font-weight="600" fill="#d1d5db">24 validateur</text>
+                    <line x1="1834" y1="200" x2="1852" y2="200" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr-d)"/>
+
+                    <rect x="1854" y="184" width="148" height="32" rx="7" fill="#374151" stroke="#4b5563" stroke-width="1.5"/>
+                    <text x="1928" y="197" text-anchor="middle" font-size="9.5" font-weight="600" fill="#d1d5db">27 consommateur</text>
+                    <text x="1928" y="210" text-anchor="middle" font-size="9.5" font-weight="600" fill="#d1d5db">données</text>
+
+                    <!-- Legend -->
+                    <circle cx="20"  cy="242" r="5" fill="#22c55e"/><text x="30" y="246" font-size="9" fill="#8a90a4">Traversé</text>
+                    <circle cx="90"  cy="242" r="5" fill="#f59e0b"/><text x="100" y="246" font-size="9" fill="#8a90a4">Remise partielle</text>
+                    <circle cx="195" cy="242" r="5" fill="#374151" stroke="#4b5563" stroke-width="1"/><text x="205" y="246" font-size="9" fill="#8a90a4">Non atteint</text>
+                  </svg>
+                </div>
+              </div>
+              <div class="visu-footer">
+                <div class="visu-stat"><div class="vsl">5</div><div class="vsb">TRANSACTION(S)</div></div>
+                <div class="visu-stat"><div class="vsl">165</div><div class="vsb">ÉVÉNEMENTS TRACÉS</div></div>
+                <div class="visu-stat"><div class="vsl">51s</div><div class="vsb">FENÊTRE TEMPORELLE</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── AIOPS CONSOLE ───────────────────── -->
+      <div class="tab-panel" id="panel-aiops">
+        <div class="aiops-shell-wrap">
+          <div class="aiops-modules-area">
+            <div class="aiops-gen-bar">
+              <span class="aiops-gen-label">Générateur Hybride</span>
+              <div class="aiops-tabs-row">
+                <button class="aiops-tab active">Générer du trafic</button>
+                <button class="aiops-tab">Système nominal</button>
+              </div>
+            </div>
+            <div class="aiops-section-title">Dashboard RADèS IA — cliquez un module pour les KPIs</div>
+            <div class="aiops-modules-grid" id="aiops-grid"></div>
+          </div>
+          <div class="aiops-kpi-panel" id="aiops-kpi-panel">
+            <div class="kpi-panel-inner" id="aiops-kpi-inner"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PAQUET TRACER ───────────────────── -->
+      <div class="tab-panel" id="panel-tracer">
+        <div class="tracer-inner">
+          <aside class="tracer-sidebar">
+            <div style="font-size:13px;font-weight:700;padding-bottom:8px;">Recherche</div>
+            <div class="form-group">
+              <label class="form-label">Type d'entité</label>
+              <select class="form-control">
+                <option>transaction_id</option>
+                <option>remise_id</option>
+                <option>fichier_id</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Sélectionner un ID</label>
+              <select class="form-control">
+                <option>fff3c034-baa5-488d-a333-f5…</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Ou saisir manuellement</label>
+              <input class="form-control" type="text" placeholder="" />
+            </div>
+            <button class="btn-secondary">Lancer le Tracé</button>
+          </aside>
+
+          <div class="tracer-content">
+            <div>
+              <div class="tracer-title">Paquet Tracer — Supervision des Flux</div>
+              <div class="breadcrumb" style="margin-top:8px;">
+                Chemin :
+                <span>Fichier</span><span class="crumb">957e07cf-d6ab-4a87-8718-2ef1c2183041</span>
+                <span>›</span>
+                <span>Remise</span><span class="crumb">44e2acba-44e5-407c-9013-9dc525bf4ec2</span>
+                <span>›</span>
+                <span>Transaction</span><span class="crumb">fff3c034-baa5-488d-a333-f5ffa571309d</span>
+              </div>
+            </div>
+            <div class="tracer-metrics">
+              <div class="metric-card"><div class="mlbl">Services (Cible)</div><div class="mval">6</div></div>
+              <div class="metric-card"><div class="mlbl">Statut Cible</div><div class="mval ko">INCOMPLET</div></div>
+              <div class="metric-card"><div class="mlbl">Dernier Service</div><div class="mval" style="font-size:15px;">27-consommateur-donnees</div></div>
+            </div>
+            <div class="tracer-sub-tabs">
+              <button class="tracer-stab active" id="tstab-tl" onclick="switchTracerTab('tl')">Timeline Cible</button>
+              <button class="tracer-stab" id="tstab-ov" onclick="switchTracerTab('ov')">Vue d'ensemble</button>
+              <button class="tracer-stab" id="tstab-visu" onclick="switchTracerTab('visu')">Visualisation</button>
+            </div>
+            <div class="tracer-stab-panel active" id="tspanel-tl">
+              <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-top:14px;">
+                <div style="padding:12px 16px;font-size:13px;font-weight:600;border-bottom:1px solid var(--border);">Détails : fff3c034-baa5-488d-a333-f5ffa571309d</div>
+                <table class="data-table">
+                  <thead><tr><th></th><th>@timestamp</th><th>service</th><th>event_type</th><th>phase</th></tr></thead>
+                  <tbody>
+                    <tr><td class="row-num">0</td><td>2026-04-11T23:55:26.946Z</td><td>08-simule-delai</td><td>kafka_reception</td><td>entree_serie</td></tr>
+                    <tr><td class="row-num">1</td><td>2026-04-11T23:55:38.954Z</td><td>08-simule-delai</td><td>kafka_emission</td><td>entree_serie</td></tr>
+                    <tr><td class="row-num">2</td><td>2026-04-11T23:55:40.917Z</td><td>10-routeur</td><td>kafka_reception</td><td>entree_serie</td></tr>
+                    <tr><td class="row-num">3</td><td>2026-04-11T23:55:40.917Z</td><td>10-routeur</td><td>kafka_emission</td><td>entree_serie</td></tr>
+                    <tr><td class="row-num">4</td><td>2026-04-11T23:55:42.114Z</td><td>13-bdd</td><td>kafka_reception</td><td>persistance_bdd</td></tr>
+                    <tr><td class="row-num">5</td><td>2026-04-11T23:55:42.114Z</td><td>13-bdd</td><td>kafka_reception</td><td>persistance_bdd</td></tr>
+                    <tr><td class="row-num">6</td><td>2026-04-11T23:55:42.114Z</td><td>13-bdd</td><td>bdd_insertion</td><td>persistance_bdd</td></tr>
+                    <tr><td class="row-num">7</td><td>2026-04-11T23:55:42.114Z</td><td>13-bdd</td><td>kafka_emission</td><td>persistance_bdd</td></tr>
+                    <tr><td class="row-num">8</td><td>2026-04-11T23:55:51.693Z</td><td>24-validateur</td><td>kafka_reception</td><td>validation_finale</td></tr>
+                    <tr><td class="row-num">9</td><td>2026-04-11T23:55:51.693Z</td><td>24-validateur</td><td>validation_ok</td><td>validation_finale</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="tracer-stab-panel" id="tspanel-ov">
+              <div style="margin-top:14px;">
+                <div style="font-size:13px;font-weight:600;margin-bottom:4px;">Structure complète du Fichier</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;">ID : 957e07cf-d6ab-4a87-8718-2ef1c2183041</div>
+                <div class="accordion">
+                  <div class="accordion-item" onclick="toggleAcc(this)">
+                    <div class="accordion-hdr"><span class="chevron">›</span>Remise : 363c062b-1270-4718-b274-a30cd49f88f3</div>
+                    <div class="accordion-body">
+                      <div class="accordion-row"><span class="bko">KO</span>Transaction 9f535639-f21f-4636-ab27-571911f620a5 : 6/8 services</div>
+                    </div>
+                  </div>
+                  <div class="accordion-item" onclick="toggleAcc(this)">
+                    <div class="accordion-hdr"><span class="chevron">›</span>Remise : f517d51c-4b01-4a0a-b26f-3cc3772224a0</div>
+                    <div class="accordion-body">
+                      <div class="accordion-row"><span class="bko">KO</span>Transaction 06c0ba4d-b96d-4f09-87ef-ed19a7f75036 : 6/8 services</div>
+                      <div class="accordion-row"><span class="bko">KO</span>Transaction 14f294ba-4b77-4227-afe9-a7c35b808514 : 6/8 services</div>
+                    </div>
+                  </div>
+                  <div class="accordion-item open" onclick="toggleAcc(this)">
+                    <div class="accordion-hdr"><span class="chevron">›</span>Remise : 44e2acba-44e5-407c-9013-9dc525bf4ec2</div>
+                    <div class="accordion-body">
+                      <div class="accordion-row"><span class="bko">KO</span>Transaction fd9ae235-4dd6-4150-be60-524635a2abd8 : 6/8 services</div>
+                      <div class="accordion-row" style="background:rgba(41,121,255,.06);">
+                        <span class="bko">KO</span>Transaction fff3c034-baa5-488d-a333-f5ffa571309d
+                        <span style="color:var(--accent-blue);font-size:11px;">(Cible)</span> : 6/8 services
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="tracer-stab-panel" id="tspanel-visu">
+              <div style="margin-top:10px;font-size:11px;color:var(--text-muted);margin-bottom:8px;">Cliquez sur un nœud pour voir la traversée par type</div>
+              <div id="visu-scroll" style="overflow-x:auto;cursor:grab;user-select:none;">
+                <div>
+                  <!-- graphe cliquable -->
+                  <svg viewBox="0 0 2060 260" xmlns="http://www.w3.org/2000/svg" style="width:2060px;height:260px;">
+                    <defs>
+                      <marker id="tarr-g" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L0,7 L7,3.5 z" fill="#22c55e"/></marker>
+                      <marker id="tarr-y" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L0,7 L7,3.5 z" fill="#f59e0b"/></marker>
+                      <marker id="tarr-d" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L0,7 L7,3.5 z" fill="#6b7280"/></marker>
+                    </defs>
+                    <!-- serial: tous les types traversent -->
+                    <g style="cursor:pointer" onclick="showTracerNode('2 simule-délai','serial')"><rect x="10"   y="114" width="128" height="32" rx="7" fill="#22c55e" stroke="#16a34a" stroke-width="1.5"/><text x="74"   y="134" text-anchor="middle" font-size="10" font-weight="600" fill="#fff" pointer-events="none">2 simule-délai</text></g>
+                    <line x1="138" y1="130" x2="156" y2="130" stroke="#22c55e" stroke-width="1.5" marker-end="url(#tarr-g)"/>
+                    <g style="cursor:pointer" onclick="showTracerNode('3 validateur','serial')"><rect x="158"  y="114" width="128" height="32" rx="7" fill="#22c55e" stroke="#16a34a" stroke-width="1.5"/><text x="222"  y="134" text-anchor="middle" font-size="10" font-weight="600" fill="#fff" pointer-events="none">3 validateur</text></g>
+                    <line x1="286" y1="130" x2="304" y2="130" stroke="#22c55e" stroke-width="1.5" marker-end="url(#tarr-g)"/>
+                    <g style="cursor:pointer" onclick="showTracerNode('4 transformateur','serial')"><rect x="306"  y="114" width="128" height="32" rx="7" fill="#22c55e" stroke="#16a34a" stroke-width="1.5"/><text x="370"  y="134" text-anchor="middle" font-size="10" font-weight="600" fill="#fff" pointer-events="none">4 transformateur</text></g>
+                    <line x1="434" y1="130" x2="452" y2="130" stroke="#22c55e" stroke-width="1.5" marker-end="url(#tarr-g)"/>
+                    <g style="cursor:pointer" onclick="showTracerNode('5 simule-délai','serial')"><rect x="454"  y="114" width="128" height="32" rx="7" fill="#22c55e" stroke="#16a34a" stroke-width="1.5"/><text x="518"  y="134" text-anchor="middle" font-size="10" font-weight="600" fill="#fff" pointer-events="none">5 simule-délai</text></g>
+                    <line x1="582" y1="130" x2="600" y2="130" stroke="#22c55e" stroke-width="1.5" marker-end="url(#tarr-g)"/>
+                    <g style="cursor:pointer" onclick="showTracerNode('6 validateur','serial')"><rect x="602"  y="114" width="128" height="32" rx="7" fill="#22c55e" stroke="#16a34a" stroke-width="1.5"/><text x="666"  y="134" text-anchor="middle" font-size="10" font-weight="600" fill="#fff" pointer-events="none">6 validateur</text></g>
+                    <line x1="730" y1="130" x2="748" y2="130" stroke="#22c55e" stroke-width="1.5" marker-end="url(#tarr-g)"/>
+                    <g style="cursor:pointer" onclick="showTracerNode('7 diviseur','serial')"><rect x="750"  y="114" width="128" height="32" rx="7" fill="#22c55e" stroke="#16a34a" stroke-width="1.5"/><text x="814"  y="134" text-anchor="middle" font-size="10" font-weight="600" fill="#fff" pointer-events="none">7 diviseur</text></g>
+                    <line x1="878" y1="130" x2="896" y2="130" stroke="#22c55e" stroke-width="1.5" marker-end="url(#tarr-g)"/>
+                    <g style="cursor:pointer" onclick="showTracerNode('8 simule-délai','serial')"><rect x="898"  y="114" width="128" height="32" rx="7" fill="#22c55e" stroke="#16a34a" stroke-width="1.5"/><text x="962"  y="134" text-anchor="middle" font-size="10" font-weight="600" fill="#fff" pointer-events="none">8 simule-délai</text></g>
+                    <line x1="1026" y1="130" x2="1044" y2="130" stroke="#22c55e" stroke-width="1.5" marker-end="url(#tarr-g)"/>
+                    <g style="cursor:pointer" onclick="showTracerNode('9 validateur','serial')"><rect x="1046" y="114" width="128" height="32" rx="7" fill="#22c55e" stroke="#16a34a" stroke-width="1.5"/><text x="1110" y="134" text-anchor="middle" font-size="10" font-weight="600" fill="#fff" pointer-events="none">9 validateur</text></g>
+                    <line x1="1174" y1="130" x2="1192" y2="130" stroke="#22c55e" stroke-width="1.5" marker-end="url(#tarr-g)"/>
+                    <g style="cursor:pointer" onclick="showTracerNode('10 routeur','serial')"><rect x="1194" y="114" width="128" height="32" rx="7" fill="#22c55e" stroke="#16a34a" stroke-width="1.5"/><text x="1258" y="134" text-anchor="middle" font-size="10" font-weight="600" fill="#fff" pointer-events="none">10 routeur</text></g>
+                    <line x1="1322" y1="130" x2="1348" y2="130" stroke="#22c55e" stroke-width="1.5"/>
+                    <line x1="1348" y1="60"  x2="1348" y2="200" stroke="#aaa" stroke-width="1.5"/>
+                    <line x1="1348" y1="60"  x2="1408" y2="60"  stroke="#22c55e" stroke-width="1.5" marker-end="url(#tarr-g)"/>
+                    <line x1="1348" y1="130" x2="1408" y2="130" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#tarr-y)"/>
+                    <line x1="1348" y1="200" x2="1408" y2="200" stroke="#6b7280" stroke-width="1.5" marker-end="url(#tarr-d)"/>
+                    <text x="1412" y="22"  font-size="9" fill="#22c55e" font-style="italic" font-weight="500">Fichier seulement</text>
+                    <text x="1412" y="100" font-size="9" fill="#f59e0b" font-style="italic" font-weight="500">Remise parfois (avec fichier)</text>
+                    <text x="1412" y="170" font-size="9" fill="#9ca3af" font-style="italic" font-weight="500">Transaction (parfois remise)</text>
+                    <!-- lane 1: fichier uniquement -->
+                    <g style="cursor:pointer" onclick="showTracerNode('11 bdd','fichier')"><rect x="1410" y="44" width="128" height="32" rx="7" fill="#22c55e" stroke="#16a34a" stroke-width="1.5"/><text x="1474" y="64" text-anchor="middle" font-size="10" font-weight="600" fill="#fff" pointer-events="none">11 bdd</text></g>
+                    <line x1="1538" y1="60" x2="1556" y2="60" stroke="#22c55e" stroke-width="1.5" marker-end="url(#tarr-g)"/>
+                    <g style="cursor:pointer" onclick="showTracerNode('19 orchestrateur','fichier')"><rect x="1558" y="44" width="128" height="32" rx="7" fill="#22c55e" stroke="#16a34a" stroke-width="1.5"/><text x="1622" y="64" text-anchor="middle" font-size="10" font-weight="600" fill="#fff" pointer-events="none">19 orchestrateur</text></g>
+                    <line x1="1686" y1="60" x2="1704" y2="60" stroke="#22c55e" stroke-width="1.5" marker-end="url(#tarr-g)"/>
+                    <g style="cursor:pointer" onclick="showTracerNode('22 validateur','fichier')"><rect x="1706" y="44" width="128" height="32" rx="7" fill="#22c55e" stroke="#16a34a" stroke-width="1.5"/><text x="1770" y="64" text-anchor="middle" font-size="10" font-weight="600" fill="#fff" pointer-events="none">22 validateur</text></g>
+                    <line x1="1834" y1="60" x2="1852" y2="60" stroke="#22c55e" stroke-width="1.5" marker-end="url(#tarr-g)"/>
+                    <g style="cursor:pointer" onclick="showTracerNode('25 consommateur-données','fichier')"><rect x="1854" y="44" width="148" height="32" rx="7" fill="#22c55e" stroke="#16a34a" stroke-width="1.5"/><text x="1928" y="57" text-anchor="middle" font-size="9.5" font-weight="600" fill="#fff" pointer-events="none">25 consommateur</text><text x="1928" y="70" text-anchor="middle" font-size="9.5" font-weight="600" fill="#fff" pointer-events="none">données</text></g>
+                    <!-- lane 2: remise uniquement -->
+                    <g style="cursor:pointer" onclick="showTracerNode('12 bdd','remise')"><rect x="1410" y="114" width="128" height="32" rx="7" fill="#f59e0b" stroke="#d97706" stroke-width="1.5"/><text x="1474" y="134" text-anchor="middle" font-size="10" font-weight="600" fill="#fff" pointer-events="none">12 bdd</text></g>
+                    <line x1="1538" y1="130" x2="1556" y2="130" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#tarr-y)"/>
+                    <g style="cursor:pointer" onclick="showTracerNode('20 orchestrateur','remise')"><rect x="1558" y="114" width="128" height="32" rx="7" fill="#f59e0b" stroke="#d97706" stroke-width="1.5"/><text x="1622" y="134" text-anchor="middle" font-size="10" font-weight="600" fill="#fff" pointer-events="none">20 orchestrateur</text></g>
+                    <line x1="1686" y1="130" x2="1704" y2="130" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#tarr-y)"/>
+                    <g style="cursor:pointer" onclick="showTracerNode('23 validateur','remise')"><rect x="1706" y="114" width="128" height="32" rx="7" fill="#f59e0b" stroke="#d97706" stroke-width="1.5"/><text x="1770" y="134" text-anchor="middle" font-size="10" font-weight="600" fill="#fff" pointer-events="none">23 validateur</text></g>
+                    <line x1="1834" y1="130" x2="1852" y2="130" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#tarr-y)"/>
+                    <g style="cursor:pointer" onclick="showTracerNode('26 consommateur-données','remise')"><rect x="1854" y="114" width="148" height="32" rx="7" fill="#f59e0b" stroke="#d97706" stroke-width="1.5"/><text x="1928" y="127" text-anchor="middle" font-size="9.5" font-weight="600" fill="#fff" pointer-events="none">26 consommateur</text><text x="1928" y="140" text-anchor="middle" font-size="9.5" font-weight="600" fill="#fff" pointer-events="none">données</text></g>
+                    <!-- lane 3: transaction uniquement -->
+                    <g style="cursor:pointer" onclick="showTracerNode('13 bdd','transaction')"><rect x="1410" y="184" width="128" height="32" rx="7" fill="#374151" stroke="#4b5563" stroke-width="1.5"/><text x="1474" y="204" text-anchor="middle" font-size="10" font-weight="600" fill="#d1d5db" pointer-events="none">13 bdd</text></g>
+                    <line x1="1538" y1="200" x2="1556" y2="200" stroke="#6b7280" stroke-width="1.5" marker-end="url(#tarr-d)"/>
+                    <g style="cursor:pointer" onclick="showTracerNode('21 orchestrateur','transaction')"><rect x="1558" y="184" width="128" height="32" rx="7" fill="#374151" stroke="#4b5563" stroke-width="1.5"/><text x="1622" y="204" text-anchor="middle" font-size="10" font-weight="600" fill="#d1d5db" pointer-events="none">21 orchestrateur</text></g>
+                    <line x1="1686" y1="200" x2="1704" y2="200" stroke="#6b7280" stroke-width="1.5" marker-end="url(#tarr-d)"/>
+                    <g style="cursor:pointer" onclick="showTracerNode('24 validateur','transaction')"><rect x="1706" y="184" width="128" height="32" rx="7" fill="#374151" stroke="#4b5563" stroke-width="1.5"/><text x="1770" y="204" text-anchor="middle" font-size="10" font-weight="600" fill="#d1d5db" pointer-events="none">24 validateur</text></g>
+                    <line x1="1834" y1="200" x2="1852" y2="200" stroke="#6b7280" stroke-width="1.5" marker-end="url(#tarr-d)"/>
+                    <g style="cursor:pointer" onclick="showTracerNode('27 consommateur-données','transaction')"><rect x="1854" y="184" width="148" height="32" rx="7" fill="#374151" stroke="#4b5563" stroke-width="1.5"/><text x="1928" y="197" text-anchor="middle" font-size="9.5" font-weight="600" fill="#d1d5db" pointer-events="none">27 consommateur</text><text x="1928" y="210" text-anchor="middle" font-size="9.5" font-weight="600" fill="#d1d5db" pointer-events="none">données</text></g>
+                    <circle cx="20"  cy="242" r="5" fill="#22c55e"/><text x="30" y="246" font-size="9" fill="#8a90a4">Traversé</text>
+                    <circle cx="90"  cy="242" r="5" fill="#f59e0b"/><text x="100" y="246" font-size="9" fill="#8a90a4">Remise partielle</text>
+                    <circle cx="195" cy="242" r="5" fill="#374151" stroke="#4b5563" stroke-width="1"/><text x="205" y="246" font-size="9" fill="#8a90a4">Non atteint</text>
+                  </svg>
+                </div>
+              </div>
+              <!-- panneau détail traversée -->
+              <div id="tracer-node-detail" style="display:none;margin-top:12px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /rades-main -->
+  </div><!-- /rades-shell -->
+</div><!-- /page-rades -->
+
+
+<!-- ════════════════════════════════════════
+     SETTINGS PANEL
+════════════════════════════════════════ -->
+<div class="settings-overlay" id="settingsOverlay" onclick="closeOnBg(event)">
+  <div class="settings-panel">
+    <div class="settings-header">
+      <h3>Paramètres RADèS</h3>
+      <button class="btn-close" onclick="toggleSettings()">×</button>
+    </div>
+
+    <!-- Connexion Elasticsearch -->
+    <div class="settings-section">
+      <div class="settings-section-title">Connexion Elasticsearch</div>
+      <div class="settings-row" style="margin-bottom:10px;">
+        <label class="settings-label">Hôte du cluster</label>
+        <input class="settings-input" type="text" value="http://localhost:9200" />
+      </div>
+      <div class="settings-2col">
+        <div class="settings-row">
+          <label class="settings-label">Utilisateur</label>
+          <input class="settings-input" type="text" value="elastic" />
+        </div>
+        <div class="settings-row">
+          <label class="settings-label">Mot de passe</label>
+          <input class="settings-input" type="password" value="password" />
+        </div>
+      </div>
+      <div class="conn-status-row">
+        <button class="btn-test">Tester la connexion</button>
+        <span class="conn-ok">● Connecté</span>
+      </div>
+    </div>
+
+    <!-- Services de messagerie -->
+    <div class="settings-section">
+      <div class="settings-section-title">Services de messagerie &amp; Incidents</div>
+      <div class="service-card">
+        <div class="service-icon-sq" style="background:#1868db;">IA</div>
+        <div class="service-info">
+          <div class="service-name">Slack</div>
+          <div class="service-desc">Envoie des alertes sur un canal Slack configuré.</div>
+        </div>
+        <div class="service-right"><span class="badge-inactif">INACTIF</span><button class="btn-configure">Configurer</button></div>
+      </div>
+      <div class="service-card">
+        <div class="service-icon-sq" style="background:#1a6dff;">◆</div>
+        <div class="service-info">
+          <div class="service-name">Atlassian Jira</div>
+          <div class="service-desc">Crée des tickets d'incident automatiquement.</div>
+        </div>
+        <div class="service-right"><span class="badge-inactif">INACTIF</span><button class="btn-configure">Configurer</button></div>
+      </div>
+      <div class="service-card">
+        <div class="service-icon-sq" style="background:#06ac38;">🟢</div>
+        <div class="service-info">
+          <div class="service-name">PagerDuty</div>
+          <div class="service-desc">Déclenche une astreinte sur incident critique.</div>
+        </div>
+        <div class="service-right">
+          <span class="badge-actif">ACTIF</span>
+          <button class="btn-configure" style="border-color:var(--accent-green);color:var(--accent-green);">Gérer</button>
+        </div>
+      </div>
+      <div class="service-card">
+        <div class="service-icon-sq" style="background:#444;">✉</div>
+        <div class="service-info">
+          <div class="service-name">Email SMTP</div>
+          <div class="service-desc">Envoie des rapports par email aux équipes.</div>
+        </div>
+        <div class="service-right"><span class="badge-inactif">INACTIF</span><button class="btn-configure">Configurer</button></div>
+      </div>
+    </div>
+
+    <!-- Routage alertes -->
+    <div class="settings-section">
+      <div class="settings-section-title">Routage des alertes par sévérité</div>
+      <div class="severity-row">
+        <div class="sev-dot" style="background:#ef4444;"></div>
+        <div class="sev-label" style="color:#ef4444;">CRITIQUE</div>
+        <div class="sev-arrow">→</div>
+        <select class="sev-select"><option>PagerDuty + Slack</option><option>PagerDuty uniquement</option><option>Slack uniquement</option></select>
+      </div>
+      <div class="severity-row">
+        <div class="sev-dot" style="background:#f97316;"></div>
+        <div class="sev-label" style="color:#f97316;">ÉLEVÉE</div>
+        <div class="sev-arrow">→</div>
+        <select class="sev-select"><option>Slack + Jira</option><option>Slack uniquement</option><option>Email uniquement</option></select>
+      </div>
+      <div class="severity-row">
+        <div class="sev-dot" style="background:#f59e0b;"></div>
+        <div class="sev-label" style="color:#f59e0b;">MOYENNE</div>
+        <div class="sev-arrow">→</div>
+        <select class="sev-select"><option>Slack uniquement</option><option>Email uniquement</option><option>Aucun</option></select>
+      </div>
+      <div class="severity-row">
+        <div class="sev-dot" style="background:#22c55e;"></div>
+        <div class="sev-label" style="color:#22c55e;">FAIBLE</div>
+        <div class="sev-arrow">→</div>
+        <select class="sev-select"><option>Aucun</option><option>Email uniquement</option></select>
+      </div>
+    </div>
+
+    <!-- Comptes utilisateurs -->
+    <div class="settings-section" id="settings-accounts-section">
+      <div class="settings-section-title">Comptes utilisateurs</div>
+      <div id="accounts-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;"></div>
+      <button class="btn-test" onclick="openAddAccount()" style="width:100%;">+ Ajouter un compte</button>
+      <div id="add-account-form" style="display:none;margin-top:12px;display:none;">
+        <div class="settings-2col">
+          <div class="settings-row">
+            <label class="settings-label">Nom</label>
+            <input class="settings-input" id="acc-name" type="text" placeholder="Ex: Yanis" />
+          </div>
+          <div class="settings-row">
+            <label class="settings-label">Email</label>
+            <input class="settings-input" id="acc-email" type="text" placeholder="email@banque.fr" />
+          </div>
+        </div>
+        <div class="settings-row" style="margin-top:8px;">
+          <label class="settings-label">Rôle</label>
+          <select class="settings-input" id="acc-role">
+            <option>Administrateur</option>
+            <option>Analyste</option>
+            <option>Lecture seule</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px;">
+          <button class="btn-save" style="flex:1;" onclick="confirmAddAccount()">Ajouter</button>
+          <button class="btn-cancel" style="flex:1;" onclick="cancelAddAccount()">Annuler</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-footer">
+      <button class="btn-cancel" onclick="toggleSettings()">Annuler</button>
+      <button class="btn-save" onclick="toggleSettings()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  /* ─── NAVIGATION ─────────────────────── */
+  function goToRades() {
+    document.getElementById('page-login').classList.remove('active');
+    document.getElementById('page-rades').classList.add('active');
+  }
+
+  /* ─── TABS ───────────────────────────── */
+  const TABS = ['agentchat','supervision','aiops','tracer'];
+  function switchTab(tab) {
+    TABS.forEach(t => {
+      document.getElementById('tab-' + t)?.classList.remove('active');
+      document.getElementById('panel-' + t)?.classList.remove('active');
+    });
+    document.getElementById('tab-' + tab)?.classList.add('active');
+    document.getElementById('panel-' + tab)?.classList.add('active');
+  }
+
+  /* ─── TRACER SUB-TABS ────────────────── */
+  function switchTracerTab(t) {
+    ['tl','ov','visu'].forEach(x => {
+      document.getElementById('tstab-' + x)?.classList.remove('active');
+      document.getElementById('tspanel-' + x)?.classList.remove('active');
+    });
+    document.getElementById('tstab-' + t)?.classList.add('active');
+    document.getElementById('tspanel-' + t)?.classList.add('active');
+  }
+
+  /* ─── ACCORDION ──────────────────────── */
+  function toggleAcc(el) { el.classList.toggle('open'); }
+
+  /* ─── SETTINGS ───────────────────────── */
+  function toggleSettings() {
+    const overlay = document.getElementById('settingsOverlay');
+    overlay.classList.toggle('open');
+    document.getElementById('btn-settings').classList.toggle('active-btn');
+  }
+  function closeOnBg(e) {
+    if (e.target === document.getElementById('settingsOverlay')) toggleSettings();
+  }
+
+  /* ─── ZOOM ───────────────────────────── */
+  let zoomLevel = 1;
+  function zoom(delta) {
+    zoomLevel = Math.min(3, Math.max(0.25, zoomLevel + delta));
+    applyZoom();
+  }
+  function resetZoom() { zoomLevel = 1; applyZoom(); }
+  function applyZoom() {
+    document.getElementById('visuInner').style.transform = 'scale(' + zoomLevel + ')';
+    document.getElementById('zoom-label').textContent = Math.round(zoomLevel * 100) + '%';
+  }
+
+  /* ─── AIOPS TABS ─────────────────────── */
+  document.querySelectorAll('.aiops-tab').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.aiops-tab').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+
+  /* ─── AIOPS MODULES ──────────────────── */
+  const AIOPS_DATA = [
+    { id:'erreur',    title:'Taux d\'erreur',        value:'4.2%',    status:'err',
+      data:[1.2,1.5,1.8,2.1,2.8,3.5,4.2],
+      kpis:[{l:'Actuel',v:'4.2%',s:'err'},{l:'Moy. 24h',v:'2.1%'},{l:'Min 24h',v:'0.8%'},{l:'Max 24h',v:'4.2%'},{l:'Seuil critique',v:'5.0%'},{l:'Tendance',v:'↑ +2.1%',s:'err'},{l:'SLA cible',v:'< 2%'},{l:'Services touchés',v:'3'}]},
+    { id:'latence',   title:'Latence P95',            value:'342 ms',  status:'warn',
+      data:[180,200,220,260,290,320,342],
+      kpis:[{l:'Actuel',v:'342 ms',s:'warn'},{l:'Moy. 24h',v:'210 ms'},{l:'Min 24h',v:'145 ms'},{l:'Max 24h',v:'342 ms'},{l:'Seuil critique',v:'500 ms'},{l:'Tendance',v:'↑ +162 ms',s:'warn'},{l:'SLA cible',v:'< 200 ms'},{l:'Req. concernées',v:'12%'}]},
+    { id:'tpm',       title:'Transactions / min',     value:'1 247',   status:'ok',
+      data:[900,1050,1100,1200,1150,1220,1247],
+      kpis:[{l:'Actuel',v:'1 247/min',s:'ok'},{l:'Moy. 24h',v:'1 105/min'},{l:'Min 24h',v:'820/min'},{l:'Max 24h',v:'1 380/min'},{l:'Tendance',v:'↑ stable',s:'ok'},{l:'Pic prévu',v:'14h00'},{l:'Capacité max',v:'3 000/min'},{l:'Utilisation',v:'41.6%'}]},
+    { id:'dispo',     title:'Disponibilité',           value:'99.7%',   status:'ok',
+      data:[99.5,99.8,99.9,99.7,99.8,99.9,99.7],
+      kpis:[{l:'Actuel',v:'99.7%',s:'ok'},{l:'Moy. 30j',v:'99.85%'},{l:'Downtime 30j',v:'1h 18 min'},{l:'SLA cible',v:'99.9%'},{l:'Incidents',v:'2 ce mois'},{l:'MTTR',v:'39 min'},{l:'MTBF',v:'14j 6h'},{l:'Prochaine maint.',v:'dim. 02h00'}]},
+    { id:'anomalies', title:'Anomalies détectées',     value:'7',       status:'err',
+      data:[0,1,0,2,1,3,7],
+      kpis:[{l:'Actuel',v:'7',s:'err'},{l:'Dernière heure',v:'4'},{l:'24h total',v:'14'},{l:'Score confiance',v:'91%'},{l:'Type majoritaire',v:'Spike latence'},{l:'Service source',v:'api-paiement'},{l:'Auto-remédiation',v:'2 / 7'},{l:'Escalade',v:'2 tickets'}]},
+    { id:'alertes',   title:'Alertes actives',         value:'3',       status:'warn',
+      data:[0,0,1,1,2,2,3],
+      kpis:[{l:'Actuel',v:'3 actives',s:'warn'},{l:'Critique',v:'1',s:'err'},{l:'Élevée',v:'1',s:'warn'},{l:'Moyenne',v:'1'},{l:'Acquittées',v:'5'},{l:'Durée moy.',v:'22 min'},{l:'Canal',v:'Slack + PagerDuty'},{l:'Escalade auto',v:'Activée'}]},
+  ];
+
+  function buildAiopsGrid() {
+    const grid = document.getElementById('aiops-grid');
+    if (!grid || grid.children.length) return;
+    grid.innerHTML = AIOPS_DATA.map(m => {
+      const n = m.data.length;
+      const mn = Math.min(...m.data), mx = Math.max(...m.data), rng = mx - mn || 1;
+      const pts = m.data.map((v, i) => ((i / (n - 1)) * 96 + 2) + ',' + (38 - ((v - mn) / rng) * 34)).join(' ');
+      const last = pts.split(' ').pop();
+      const col = m.status === 'err' ? '#ef4444' : m.status === 'warn' ? '#f59e0b' : '#22c55e';
+      const fill = m.status === 'err' ? 'rgba(239,68,68,.08)' : m.status === 'warn' ? 'rgba(245,158,11,.08)' : 'rgba(34,197,94,.08)';
+      const firstY = pts.split(' ')[0].split(',')[1];
+      const area = `${pts} 98,40 2,40`;
+      const delta = m.data[n-1] - m.data[0];
+      const sign = delta > 0 ? '↑' : delta < 0 ? '↓' : '→';
+      return `<div class="amod-card" id="amod-${m.id}" onclick="selectAiopsModule('${m.id}')">
+        <div class="amod-title">${m.title}</div>
+        <div class="amod-value ${m.status}">${m.value}</div>
+        <svg viewBox="0 0 100 40" class="amod-chart" style="height:44px;">
+          <polygon points="${area}" fill="${fill}"/>
+          <polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+          <circle cx="${last.split(',')[0]}" cy="${last.split(',')[1]}" r="2.8" fill="${col}"/>
+        </svg>
+        <div class="amod-trend" style="color:${col}">${sign} ${m.data[0]} → ${m.data[n-1]}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function selectAiopsModule(id) {
+    const m = AIOPS_DATA.find(x => x.id === id);
+    if (!m) return;
+    document.querySelectorAll('.amod-card').forEach(c => c.classList.remove('active'));
+    document.getElementById('amod-' + id).classList.add('active');
+    const panel = document.getElementById('aiops-kpi-panel');
+    panel.classList.add('open');
+    document.getElementById('aiops-kpi-inner').innerHTML =
+      `<div class="kpi-panel-title"><span>${m.title}</span><button class="kpi-close-btn" onclick="closeAiopsKpi()">X</button></div>` +
+      m.kpis.map(k => `<div class="kpi-row"><span class="kpi-label">${k.l}</span><span class="kpi-val ${k.s||''}">${k.v}</span></div>`).join('');
+  }
+
+  function closeAiopsKpi() {
+    document.getElementById('aiops-kpi-panel').classList.remove('open');
+    document.querySelectorAll('.amod-card').forEach(c => c.classList.remove('active'));
+  }
+
+  buildAiopsGrid();
+
+  /* ─── TRACER NODE TRAVERSAL ──────────── */
+  const TRAVERSAL_TIMES = {
+    fichier:      ['2026-04-11T23:55:26.946Z', '2026-04-11T23:55:27.103Z'],
+    remise:       ['2026-04-11T23:55:38.954Z', '2026-04-11T23:55:39.210Z'],
+    transaction:  ['2026-04-11T23:55:42.114Z', '2026-04-11T23:55:42.390Z'],
+  };
+
+  (function(){
+    const el = document.getElementById('visu-scroll');
+    if (!el) return;
+    let down = false, startX, scrollLeft;
+    el.addEventListener('mousedown', e => { down = true; startX = e.pageX - el.offsetLeft; scrollLeft = el.scrollLeft; el.style.cursor='grabbing'; });
+    el.addEventListener('mouseleave', () => { down = false; el.style.cursor='grab'; });
+    el.addEventListener('mouseup', () => { down = false; el.style.cursor='grab'; });
+    el.addEventListener('mousemove', e => { if (!down) return; e.preventDefault(); el.scrollLeft = scrollLeft - (e.pageX - el.offsetLeft - startX); });
+  })();
+
+  /* ── SESSIONS (sidebar gauche) ── */
+  let nextSessionId = 4;
+
+  function addSession() {
+    const list = document.getElementById('session-list');
+    const id = nextSessionId++;
+    const div = document.createElement('div');
+    div.className = 'session-item';
+    div.dataset.id = id;
+    div.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:4px;">
+        <div class="si-name" id="sname-${id}">Nouvelle session</div>
+        <button class="session-rename-btn" onclick="event.stopPropagation();startSessionRename(${id})" title="Renommer">✎</button>
+      </div>
+      <div class="si-time">À l'instant</div>`;
+    list.prepend(div);
+    startSessionRename(id);
+  }
+
+  function startSessionRename(id) {
+    const span = document.getElementById('sname-' + id);
+    if (!span) return;
+    span.contentEditable = 'true';
+    span.focus();
+    const range = document.createRange();
+    range.selectNodeContents(span);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    const finish = () => {
+      span.contentEditable = 'false';
+      if (!span.textContent.trim()) span.textContent = 'Session sans nom';
+    };
+    span.addEventListener('blur', finish, { once: true });
+    span.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); span.blur(); } }, { once: true });
+  }
+
+  /* ── ACCOUNTS ── */
+  let accounts = [
+    { name:'Yanis', email:'yanisarris11@gmail.com', role:'Administrateur' }
+  ];
+
+  function renderAccounts() {
+    const el = document.getElementById('accounts-list');
+    if (!el) return;
+    el.innerHTML = accounts.map((a, i) => `
+      <div class="account-row">
+        <div class="account-avatar">${a.name.charAt(0).toUpperCase()}</div>
+        <div class="account-info">
+          <div class="account-name">${a.name}</div>
+          <div class="account-meta">${a.email} &nbsp;·&nbsp; ${a.role}</div>
+        </div>
+        <button class="account-del" title="Supprimer" onclick="removeAccount(${i})">×</button>
+      </div>`).join('');
+  }
+
+  function openAddAccount() {
+    const f = document.getElementById('add-account-form');
+    f.style.display = f.style.display === 'none' ? 'block' : 'none';
+  }
+
+  function cancelAddAccount() {
+    document.getElementById('add-account-form').style.display = 'none';
+    ['acc-name','acc-email'].forEach(id => document.getElementById(id).value = '');
+  }
+
+  function confirmAddAccount() {
+    const name  = document.getElementById('acc-name').value.trim();
+    const email = document.getElementById('acc-email').value.trim();
+    const role  = document.getElementById('acc-role').value;
+    if (!name || !email) return;
+    accounts.push({ name, email, role });
+    renderAccounts();
+    cancelAddAccount();
+  }
+
+  function removeAccount(i) {
+    accounts.splice(i, 1);
+    renderAccounts();
+  }
+
+  /* init */
+  document.addEventListener('DOMContentLoaded', () => { renderAccounts(); });
+  renderAccounts();
+
+  function showTracerNode(name, lane) {
+    const panel = document.getElementById('tracer-node-detail');
+    panel.style.display = 'block';
+
+    const lanes = lane === 'serial'
+      ? ['fichier','remise','transaction']
+      : [lane];
+
+    const rows = ['fichier','remise','transaction'].map(t => {
+      const active = lanes.includes(t);
+      const col   = t === 'fichier' ? '#22c55e' : t === 'remise' ? '#f59e0b' : '#6b7280';
+      const label = t === 'fichier' ? 'Fichier seulement' : t === 'remise' ? 'Remise (avec fichier)' : 'Transaction (remise)';
+      const times = TRAVERSAL_TIMES[t];
+      return `<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border-soft);">
+        <span style="font-size:11px;font-weight:700;color:${active?'#22c55e':'#4b5563'}">${active ? 'OUI' : 'NON'}</span>
+        <span style="font-size:11px;font-weight:600;color:${col};width:160px;">${label}</span>
+        ${active
+          ? `<div style="font-size:10px;color:var(--text-secondary);font-family:monospace;">
+               <div>réception : ${times[0]}</div>
+               <div>émission&nbsp; : ${times[1]}</div>
+             </div>`
+          : `<span style="font-size:10px;color:var(--text-muted);">— non concerné</span>`
+        }
+      </div>`;
+    }).join('');
+
+    panel.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span style="font-size:13px;font-weight:700;">${name}</span>
+        <button onclick="document.getElementById('tracer-node-detail').style.display='none'"
+          style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:13px;font-weight:700;">X</button>
+      </div>
+      ${rows}`;
+  }
+</script>
+</body>
+</html>
