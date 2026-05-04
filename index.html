@@ -677,9 +677,9 @@
 
       <!-- TABS -->
       <div class="tabs-bar">
+        <button class="tab-btn active" id="tab-aiops" onclick="switchTab('aiops')">AIOps Console</button>
         <button class="tab-btn" id="tab-agentchat" onclick="switchTab('agentchat')">Agent Chat</button>
-        <button class="tab-btn active" id="tab-supervision" onclick="switchTab('supervision')">Supervision</button>
-        <button class="tab-btn" id="tab-aiops" onclick="switchTab('aiops')">AIOps Console</button>
+        <button class="tab-btn" id="tab-supervision" onclick="switchTab('supervision')">Supervision</button>
         <button class="tab-btn" id="tab-tracer" onclick="switchTab('tracer')">Paquet Tracer</button>
       </div>
 
@@ -705,7 +705,7 @@
       </div>
 
       <!-- ── SUPERVISION ─────────────────────── -->
-      <div class="tab-panel active" id="panel-supervision">
+      <div class="tab-panel" id="panel-supervision">
         <div class="supervision-content">
           <div>
             <div style="font-size:18px;font-weight:700;">Rapport de supervision autonome</div>
@@ -897,7 +897,7 @@
       </div>
 
       <!-- ── AIOPS CONSOLE ───────────────────── -->
-      <div class="tab-panel" id="panel-aiops">
+      <div class="tab-panel active" id="panel-aiops">
         <div class="aiops-shell-wrap">
           <div class="aiops-modules-area">
             <div class="aiops-gen-bar">
@@ -1016,7 +1016,10 @@
               </div>
             </div>
             <div class="tracer-stab-panel" id="tspanel-visu">
-              <div style="margin-top:10px;font-size:11px;color:var(--text-muted);margin-bottom:8px;">Cliquez sur un nœud pour voir la traversée par type</div>
+              <div style="margin-top:10px;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                <span style="font-size:11px;color:var(--text-muted);">Cliquez sur un nœud pour voir la traversée par type</span>
+                <button onclick="exportVisuPng()" style="background:var(--bg-card);border:1px solid var(--border);color:var(--text-secondary);border-radius:6px;padding:5px 12px;font-size:11px;cursor:pointer;">Exporter PNG</button>
+              </div>
               <div id="visu-scroll" style="overflow-x:auto;cursor:grab;user-select:none;">
                 <div>
                   <!-- graphe cliquable -->
@@ -1243,7 +1246,7 @@
   }
 
   /* ─── TABS ───────────────────────────── */
-  const TABS = ['agentchat','supervision','aiops','tracer'];
+  const TABS = ['aiops','agentchat','supervision','tracer'];
   function switchTab(tab) {
     TABS.forEach(t => {
       document.getElementById('tab-' + t)?.classList.remove('active');
@@ -1464,6 +1467,31 @@
   /* init */
   document.addEventListener('DOMContentLoaded', () => { renderAccounts(); });
   renderAccounts();
+
+  function exportVisuPng() {
+    const svg = document.querySelector('#tspanel-visu svg');
+    if (!svg) return;
+    const W = 2060, H = 260, scale = 4;
+    const clone = svg.cloneNode(true);
+    clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    clone.setAttribute('width', W);
+    clone.setAttribute('height', H);
+    clone.style.cssText = '';
+    const svgStr = new XMLSerializer().serializeToString(clone);
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width  = W * scale;
+      canvas.height = H * scale;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, W * scale, H * scale);
+      const a = document.createElement('a');
+      a.download = 'visualisation-rades.png';
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    };
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgStr);
+  }
 
   function showTracerNode(name, lane) {
     const panel = document.getElementById('tracer-node-detail');
