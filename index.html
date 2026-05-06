@@ -1327,6 +1327,15 @@
     { id:'alertes',   title:'Alertes actives',         value:'3',       status:'warn',
       data:[0,0,1,1,2,2,3],
       kpis:[{l:'Actuel',v:'3 actives',s:'warn'},{l:'Critique',v:'1',s:'err'},{l:'Élevée',v:'1',s:'warn'},{l:'Moyenne',v:'1'},{l:'Acquittées',v:'5'},{l:'Durée moy.',v:'22 min'},{l:'Canal',v:'Slack + PagerDuty'},{l:'Escalade auto',v:'Activée'}]},
+    { id:'mnt-ok',    title:'Montant succès',           value:'2 847 340 €', status:'ok',
+      data:[1200000,1500000,1900000,2100000,2400000,2650000,2847340],
+      kpis:[{l:'Actuel',v:'2 847 340 €',s:'ok'},{l:'Nb transactions',v:'1 143'},{l:'Moy. par tx',v:'2 491 €'},{l:'Moy. 24h',v:'2 612 000 €'},{l:'Min 24h',v:'1 200 000 €'},{l:'Max 24h',v:'2 847 340 €'},{l:'Part du total',v:'91.4%',s:'ok'},{l:'Tendance',v:'↑ +1 647 340 €',s:'ok'}]},
+    { id:'mnt-blk',   title:'Montant bloqué',           value:'187 420 €',   status:'err',
+      data:[20000,35000,58000,90000,120000,155000,187420],
+      kpis:[{l:'Actuel',v:'187 420 €',s:'err'},{l:'Nb transactions',v:'74'},{l:'Moy. par tx',v:'2 533 €'},{l:'Cause principale',v:'Règle AML'},{l:'2e cause',v:'Plafond dépassé'},{l:'Part du total',v:'6.0%',s:'err'},{l:'Tendance',v:'↑ +167 420 €',s:'err'},{l:'Escalade auto',v:'Activée'}]},
+    { id:'mnt-enc',   title:'Montant en traitement',    value:'83 590 €',    status:'warn',
+      data:[60000,75000,68000,80000,72000,78000,83590],
+      kpis:[{l:'Actuel',v:'83 590 €',s:'warn'},{l:'Nb transactions',v:'30'},{l:'Moy. par tx',v:'2 786 €'},{l:'Durée moy.',v:'1 min 42 s'},{l:'En attente > 5 min',v:'4',s:'warn'},{l:'Part du total',v:'2.7%'},{l:'Total engagé',v:'3 118 350 €'},{l:'Tendance',v:'→ stable',s:'ok'}]},
   ];
 
   function buildAiopsGrid() {
